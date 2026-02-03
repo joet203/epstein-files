@@ -1,0 +1,18 @@
+# Database and large files
+*.db
+*.sqlite
+DataSet*/
+VOL*/
+dataset9_ids.txt
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS
+.DS_Store
+
+# Cache
+*.log

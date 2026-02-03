@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Epstein Files — Dataset 9 Browser</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0d1117; color: #c9d1d9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', monospace; padding: 40px 20px; }
+a { color: #58a6ff; text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 800px; margin: 0 auto; }
+h1 { font-size: 24px; color: #f0f6fc; margin-bottom: 8px; }
+.subtitle { color: #8b949e; font-size: 14px; margin-bottom: 30px; }
+.stats { background: #161b22; border: 1px solid #21262d; border-radius: 8px; padding: 20px; margin-bottom: 24px; text-align: center; }
+.stats .big { font-size: 48px; font-weight: 700; color: #f0f6fc; }
+.stats .label { color: #8b949e; font-size: 14px; }
+.actions { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+.btn {
+    padding: 12px 24px; border: none; border-radius: 8px; font-size: 15px;
+    cursor: pointer; font-weight: 600; transition: all 0.2s;
+}
+.btn-primary { background: #238636; color: #fff; }
+.btn-primary:hover { background: #2ea043; }
+.btn-secondary { background: #21262d; color: #c9d1d9; border: 1px solid #30363d; }
+.btn-secondary:hover { background: #30363d; }
+.search-box { display: flex; gap: 8px; margin-bottom: 24px; }
+.search-box input {
+    flex: 1; padding: 10px 14px; background: #161b22; border: 1px solid #30363d;
+    border-radius: 6px; color: #c9d1d9; font-size: 15px;
+}
+.search-box input:focus { outline: none; border-color: #58a6ff; }
+.result {
+    background: #161b22; border: 1px solid #21262d; border-radius: 8px;
+    padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between;
+    align-items: center;
+}
+.result:hover { border-color: #30363d; }
+.result .id { font-family: monospace; font-size: 14px; color: #f0f6fc; }
+.result .open-btn {
+    padding: 6px 14px; background: #da3633; border: none; border-radius: 6px;
+    color: #fff; cursor: pointer; font-size: 13px; text-decoration: none;
+}
+.result .open-btn:hover { background: #f85149; text-decoration: none; }
+.current-file {
+    background: #1c2333; border: 2px solid #58a6ff; border-radius: 8px;
+    padding: 20px; margin-bottom: 24px; text-align: center;
+}
+.current-file .label { color: #8b949e; font-size: 12px; text-transform: uppercase; margin-bottom: 8px; }
+.current-file .filename { font-family: monospace; font-size: 18px; color: #f0f6fc; margin-bottom: 12px; }
+.note { background: #161b22; border-left: 3px solid #f0883e; padding: 12px 16px; margin-bottom: 24px; font-size: 13px; color: #8b949e; }
+#results { max-height: 400px; overflow-y: auto; }
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>Dataset 9 Browser</h1>
+    <div class="subtitle">Browse 1.2 million PDFs from Dataset 9 — one of 12 datasets in the DOJ Epstein Files release</div>
+
+    <div class="note">
+        <strong>Note:</strong> These files are hosted on justice.gov. You'll need to click through their age verification gate once per session. Some files may have been removed.
+    </div>
+
+    <div class="stats">
+        <div class="big" id="count">...</div>
+        <div class="label">PDF files in Dataset 9</div>
+    </div>
+
+    <div class="actions">
+        <button class="btn btn-primary" onclick="openRandom()">Open Random File</button>
+        <button class="btn btn-secondary" onclick="openRandom()">Another Random</button>
+        <a href="/" class="btn btn-secondary">Back to Search</a>
+    </div>
+
+    <div class="current-file" id="currentFile" style="display:none">
+        <div class="label">Last opened</div>
+        <div class="filename" id="currentFilename"></div>
+        <a id="currentLink" href="#" target="_blank" class="btn btn-primary" style="display:inline-block">Open Again</a>
+    </div>
+
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Search by file ID (e.g. EFTA00039025)">
+        <button class="btn btn-secondary" onclick="doSearch()">Search</button>
+    </div>
+
+    <div id="results"></div>
+</div>
+
+<script>
+fetch("/api/ds9/stats").then(r => r.json()).then(data => {
+    document.getElementById("count").textContent = data.count.toLocaleString();
+});
+
+function openRandom() {
+    fetch("/api/ds9/random").then(r => r.json()).then(data => {
+        document.getElementById("currentFile").style.display = "block";
+        document.getElementById("currentFilename").textContent = data.id + ".pdf";
+        document.getElementById("currentLink").href = data.url;
+        window.open(data.url, "_blank");
+    });
+}
+
+document.getElementById("searchInput").addEventListener("keydown", e => {
+    if (e.key === "Enter") doSearch();
+});
+
+function doSearch() {
+    const q = document.getElementById("searchInput").value.trim();
+    if (!q) return;
+    document.getElementById("results").innerHTML = '<div style="color:#8b949e;padding:20px;text-align:center">Searching...</div>';
+    fetch("/api/ds9/search?q=" + encodeURIComponent(q)).then(r => r.json()).then(results => {
+        const el = document.getElementById("results");
+        if (!results.length) {
+            el.innerHTML = '<div style="color:#8b949e;padding:20px;text-align:center">No matches found</div>';
+            return;
+        }
+        el.innerHTML = results.map(r => `
+            <div class="result">
+                <span class="id">${r.id}.pdf</span>
+                <a class="open-btn" href="${r.url}" target="_blank">Open PDF</a>
+            </div>
+        `).join("");
+    });
+}
+</script>
+</body>
+</html>
