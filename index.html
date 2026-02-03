@@ -3,400 +3,285 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Epstein Files — Search</title>
+<title>Epstein Files — Dataset 9 Browser</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { background: #0d1117; color: #c9d1d9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', monospace; }
+body { background: #0d1117; color: #c9d1d9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', monospace; padding: 20px; }
 a { color: #58a6ff; text-decoration: none; }
 a:hover { text-decoration: underline; }
-mark { background: #f0c040; color: #000; padding: 1px 2px; border-radius: 2px; }
-
-.container { max-width: 960px; margin: 0 auto; padding: 20px; }
-
-header { padding: 30px 0 20px; border-bottom: 1px solid #21262d; margin-bottom: 20px; }
-header h1 { font-size: 24px; color: #f0f6fc; margin-bottom: 4px; }
-header .stats { font-size: 13px; color: #8b949e; }
-
-.search-box { display: flex; gap: 8px; margin-bottom: 24px; }
-.search-box input {
-    flex: 1; padding: 10px 14px; background: #161b22; border: 1px solid #30363d;
-    border-radius: 6px; color: #c9d1d9; font-size: 15px; outline: none;
+.container { max-width: 1400px; margin: 0 auto; }
+h1 { font-size: 24px; color: #f0f6fc; margin-bottom: 8px; }
+.subtitle { color: #8b949e; font-size: 14px; margin-bottom: 20px; }
+.top-bar { display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+.stats { background: #161b22; border: 1px solid #21262d; border-radius: 8px; padding: 12px 20px; display: flex; gap: 20px; }
+.stat { text-align: center; }
+.stat .num { font-size: 20px; font-weight: 700; color: #f0f6fc; }
+.stat .label { color: #8b949e; font-size: 11px; }
+.btn {
+    padding: 10px 20px; border: none; border-radius: 6px; font-size: 14px;
+    cursor: pointer; font-weight: 600; transition: all 0.2s;
 }
-.search-box input:focus { border-color: #58a6ff; }
-.search-box button {
-    padding: 10px 20px; background: #238636; border: none; border-radius: 6px;
-    color: #fff; font-size: 14px; cursor: pointer; font-weight: 600;
-}
-.search-box button:hover { background: #2ea043; }
-
-.tabs { display: flex; gap: 0; margin-bottom: 16px; border-bottom: 1px solid #21262d; }
-.tab {
-    padding: 8px 16px; cursor: pointer; color: #8b949e; font-size: 13px;
-    border-bottom: 2px solid transparent; transition: all 0.2s;
-}
-.tab.active { color: #f0f6fc; border-bottom-color: #f78166; }
-.tab:hover { color: #c9d1d9; }
-
-.results { list-style: none; }
-.result {
-    padding: 14px 16px; margin-bottom: 8px; background: #161b22;
-    border: 1px solid #21262d; border-radius: 6px; cursor: pointer; transition: border-color 0.2s;
-}
-.result:hover { border-color: #58a6ff; }
-.result .filename { color: #58a6ff; font-weight: 600; font-size: 14px; }
-.result .page { color: #8b949e; font-size: 12px; margin-left: 8px; }
-.result .snippet { margin-top: 6px; font-size: 13px; color: #8b949e; line-height: 1.5; }
-
-.doc-list { list-style: none; }
-.doc-item {
-    padding: 10px 16px; margin-bottom: 4px; background: #161b22;
-    border: 1px solid #21262d; border-radius: 6px; cursor: pointer;
-    display: flex; justify-content: space-between; align-items: center;
-}
-.doc-item:hover { border-color: #58a6ff; }
-.doc-item .name { color: #58a6ff; font-size: 14px; }
-.doc-item .meta { color: #8b949e; font-size: 12px; }
-
-.viewer { display: none; }
-.viewer.active { display: block; }
-.viewer-header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 12px 0; border-bottom: 1px solid #21262d; margin-bottom: 16px;
-}
-.viewer-header h2 { font-size: 16px; color: #f0f6fc; }
-.viewer-header button {
-    padding: 6px 14px; background: #21262d; border: 1px solid #30363d;
-    border-radius: 6px; color: #c9d1d9; cursor: pointer; font-size: 13px;
-}
-.viewer-header button:hover { background: #30363d; }
-.btn-ai {
-    padding: 6px 14px; background: #1f6feb; border: none; border-radius: 6px;
-    color: #fff; cursor: pointer; font-size: 13px; margin-left: 8px;
-}
-.btn-ai:hover { background: #388bfd; }
-.btn-ai:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-pdf {
-    padding: 6px 14px; background: #da3633; border: none; border-radius: 6px;
-    color: #fff; cursor: pointer; font-size: 13px; margin-left: 8px; text-decoration: none;
-}
-.btn-pdf:hover { background: #f85149; text-decoration: none; }
-.result .btn-pdf-sm {
-    display: inline-block; padding: 3px 10px; background: #da3633; border: none; border-radius: 4px;
-    color: #fff; cursor: pointer; font-size: 11px; margin-left: 8px; text-decoration: none; vertical-align: middle;
-}
-.result .btn-pdf-sm:hover { background: #f85149; text-decoration: none; }
-
-.summary-box {
-    background: #1c2333; border: 1px solid #30363d; border-radius: 6px;
-    padding: 16px; margin-bottom: 16px; display: none; line-height: 1.6; font-size: 14px;
-}
-.summary-box.visible { display: block; }
-.summary-box .label { color: #f78166; font-weight: 600; font-size: 12px; text-transform: uppercase; margin-bottom: 8px; }
-
-.page-block {
-    background: #161b22; border: 1px solid #21262d; border-radius: 6px;
-    padding: 16px; margin-bottom: 12px;
-}
-.page-block .page-num { color: #8b949e; font-size: 12px; margin-bottom: 8px; font-weight: 600; }
-.page-block pre {
-    white-space: pre-wrap; word-wrap: break-word; font-size: 13px;
-    line-height: 1.6; color: #c9d1d9; font-family: inherit;
-}
-
-.empty { text-align: center; padding: 60px 20px; color: #8b949e; font-size: 18px; }
-.loading { text-align: center; padding: 20px; color: #8b949e; }
-
-.filter-bar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
-.filter-btn {
-    padding: 5px 12px; background: #21262d; border: 1px solid #30363d; border-radius: 16px;
-    color: #8b949e; cursor: pointer; font-size: 12px; transition: all 0.2s;
-}
-.filter-btn:hover { border-color: #58a6ff; color: #c9d1d9; }
-.filter-btn.active { background: #1f6feb; border-color: #1f6feb; color: #fff; }
-
-.badge {
-    display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px;
-    font-weight: 600; margin-left: 6px; vertical-align: middle;
-}
-.badge-law_enforcement { background: #da3633; color: #fff; }
-.badge-deposition { background: #a371f7; color: #fff; }
-.badge-email { background: #1f6feb; color: #fff; }
-.badge-legal { background: #f0883e; color: #fff; }
-.badge-evidence_list { background: #3fb950; color: #fff; }
-.badge-phone_records { background: #768390; color: #fff; }
-.badge-document { background: #484f58; color: #c9d1d9; }
-.badge-file_listing { background: #21262d; color: #8b949e; }
-
-.score-bar {
-    display: inline-block; width: 40px; height: 6px; background: #21262d;
-    border-radius: 3px; vertical-align: middle; margin-left: 8px; overflow: hidden;
-}
-.score-bar-fill { height: 100%; border-radius: 3px; }
-
-.result .preview { margin-top: 6px; font-size: 13px; color: #8b949e; line-height: 1.5; }
+.btn-primary { background: #238636; color: #fff; }
+.btn-primary:hover { background: #2ea043; }
+.btn-secondary { background: #21262d; color: #c9d1d9; border: 1px solid #30363d; }
+.btn-secondary:hover { background: #30363d; }
+.btn-star { background: #9e6a03; color: #fff; }
+.btn-star:hover { background: #bb8009; }
+.btn-junk { background: #6e7681; color: #fff; }
+.btn-junk:hover { background: #848d97; }
+.btn-danger { background: #da3633; color: #fff; }
+.btn-danger:hover { background: #f85149; }
+.main-content { display: flex; gap: 20px; }
+.viewer-panel { flex: 1; min-width: 0; }
+.sidebar { width: 280px; flex-shrink: 0; }
+.current-file { background: #161b22; border: 1px solid #21262d; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+.current-file .filename { font-family: monospace; font-size: 14px; color: #f0f6fc; margin-bottom: 12px; word-break: break-all; }
+.current-file .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.current-file .actions .btn { padding: 8px 12px; font-size: 12px; }
+.pdf-frame { width: 100%; height: calc(100vh - 200px); min-height: 500px; border: 1px solid #21262d; border-radius: 8px; background: #161b22; }
+.pdf-frame iframe { width: 100%; height: 100%; border: none; border-radius: 8px; }
+.pdf-placeholder { display: flex; align-items: center; justify-content: center; height: 100%; color: #8b949e; font-size: 16px; }
+.list-section { background: #161b22; border: 1px solid #21262d; border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+.list-section h3 { font-size: 13px; color: #8b949e; margin-bottom: 8px; display: flex; justify-content: space-between; }
+.list-section h3 span { color: #58a6ff; }
+.file-list { max-height: 150px; overflow-y: auto; }
+.file-item { font-family: monospace; font-size: 11px; padding: 4px 8px; border-radius: 4px; margin-bottom: 4px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+.file-item:hover { background: #21262d; }
+.file-item.starred { background: #3d2e00; border-left: 2px solid #9e6a03; }
+.file-item .remove { color: #8b949e; font-size: 14px; padding: 0 4px; }
+.file-item .remove:hover { color: #f85149; }
+.note { background: #161b22; border-left: 3px solid #f0883e; padding: 10px 12px; margin-bottom: 16px; font-size: 12px; color: #8b949e; }
+.tabs { display: flex; gap: 4px; margin-bottom: 12px; }
+.tab { padding: 8px 12px; background: #21262d; border: none; color: #8b949e; border-radius: 6px 6px 0 0; cursor: pointer; font-size: 12px; }
+.tab.active { background: #161b22; color: #f0f6fc; }
 </style>
 </head>
 <body>
 <div class="container">
-    <header>
-        <h1>Epstein Files</h1>
-        <div class="stats" id="stats">Loading...</div>
-    </header>
+    <h1>Dataset 9 Browser</h1>
+    <div class="subtitle">Crowdsourced review of 1.2M PDFs from Dataset 9 — one of 12 datasets in the DOJ Epstein Files</div>
 
-    <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Search documents..." autofocus>
-        <button onclick="doSearch()">Search</button>
+    <div class="note">
+        <strong>Note:</strong> Files hosted on justice.gov require age verification once per session. Mark important files with ⭐ to save them.
     </div>
 
-    <div id="mainView">
-        <div class="tabs">
-            <div class="tab active" data-tab="highlights" onclick="switchTab('highlights')">Highlights</div>
-            <div class="tab" data-tab="search" onclick="switchTab('search')">Search</div>
-            <div class="tab" data-tab="browse" onclick="switchTab('browse')">Browse All</div>
-            <div class="tab" data-tab="people" onclick="switchTab('people')">People</div>
-            <div class="tab" data-tab="timeline" onclick="switchTab('timeline')">Timeline</div>
-            <div class="tab" data-tab="network" onclick="switchTab('network')">Network Graph</div>
+    <div class="top-bar">
+        <div class="stats">
+            <div class="stat"><div class="num" id="totalCount">...</div><div class="label">Total Files</div></div>
+            <div class="stat"><div class="num" id="viewedCount">0</div><div class="label">Viewed</div></div>
+            <div class="stat"><div class="num" id="starredCount">0</div><div class="label">Starred</div></div>
+            <div class="stat"><div class="num" id="junkCount">0</div><div class="label">Junk</div></div>
         </div>
-
-        <div id="highlightsTab">
-            <div class="filter-bar" id="filterBar"></div>
-            <ul class="results" id="highlightsList"></ul>
-        </div>
-
-        <div id="searchTab" style="display:none">
-            <div class="empty" id="searchEmpty">Search the declassified DOJ Epstein files</div>
-            <ul class="results" id="searchResults"></ul>
-        </div>
-
-        <div id="browseTab" style="display:none">
-            <div class="filter-bar" id="browseFilterBar"></div>
-            <ul class="doc-list" id="docList"></ul>
-        </div>
-
-        <div id="peopleTab" style="display:none">
-            <div class="empty">Named entities extracted from documents — coming soon</div>
-        </div>
-
-        <div id="timelineTab" style="display:none">
-            <div class="empty">Chronological view of events mentioned in documents — coming soon</div>
-        </div>
-
-        <div id="networkTab" style="display:none">
-            <div class="empty">Relationship graph between people and organizations — coming soon</div>
-        </div>
+        <button class="btn btn-primary" onclick="openRandom()">Open Random Unreviewed</button>
+        <button class="btn btn-secondary" onclick="openRandom(true)">Any Random</button>
     </div>
 
-    <div class="viewer" id="viewer">
-        <div class="viewer-header">
-            <h2 id="viewerTitle"></h2>
-            <div>
-                <a class="btn-pdf" id="btnPdf" href="#" target="_blank">Open PDF</a>
-                <button class="btn-ai" id="btnAi" onclick="aiSummarize()">AI Summary</button>
-                <button onclick="closeViewer()">Back</button>
+    <div class="main-content">
+        <div class="viewer-panel">
+            <div class="current-file" id="currentFile" style="display:none">
+                <div class="filename" id="currentFilename"></div>
+                <div class="actions">
+                    <button class="btn btn-star" onclick="markStarred()">⭐ Star</button>
+                    <button class="btn btn-junk" onclick="markJunk()">🗑 Junk</button>
+                    <a id="newTabLink" href="#" target="_blank" class="btn btn-secondary">Open in New Tab</a>
+                </div>
+            </div>
+            <div class="pdf-frame" id="pdfFrame">
+                <div class="pdf-placeholder">Click "Open Random" to start reviewing files</div>
             </div>
         </div>
-        <div class="summary-box" id="summaryBox">
-            <div class="label">AI Summary</div>
-            <div id="summaryText"></div>
+
+        <div class="sidebar">
+            <div class="list-section">
+                <h3>⭐ Starred Files <span id="starredListCount">0</span></h3>
+                <div class="file-list" id="starredList"></div>
+            </div>
+            <div class="list-section">
+                <h3>Recently Viewed <span id="recentListCount">0</span></h3>
+                <div class="file-list" id="recentList"></div>
+            </div>
+            <div class="list-section">
+                <h3>🗑 Marked as Junk <span id="junkListCount">0</span></h3>
+                <div class="file-list" id="junkList" style="max-height:100px"></div>
+            </div>
+            <button class="btn btn-secondary" onclick="exportData()" style="width:100%;margin-top:8px">Export Starred List</button>
         </div>
-        <div id="viewerPages"></div>
     </div>
 </div>
 
 <script>
-let currentDoc = null;
-let currentQuery = "";
-let highlightsData = [];
-let activeFilter = "all";
+let IDS = [];
+let loaded = false;
+let currentId = null;
 
-const TYPE_LABELS = {
-    law_enforcement: "Law Enforcement", deposition: "Deposition", email: "Email",
-    legal: "Legal Filing", evidence_list: "Evidence", phone_records: "Phone Records",
-    document: "Document", file_listing: "File Listing"
-};
+// localStorage keys
+const VIEWED_KEY = 'epstein_viewed';
+const STARRED_KEY = 'epstein_starred';
+const JUNK_KEY = 'epstein_junk';
 
-fetch("/api/stats").then(r => r.json()).then(s => {
-    document.getElementById("stats").textContent = `${s.documents} documents · ${s.pages} pages indexed`;
-});
+function getSet(key) {
+    try { return new Set(JSON.parse(localStorage.getItem(key) || '[]')); }
+    catch { return new Set(); }
+}
+function saveSet(key, set) {
+    localStorage.setItem(key, JSON.stringify([...set]));
+}
 
-// load highlights on startup
-loadHighlights();
+let viewed = getSet(VIEWED_KEY);
+let starred = getSet(STARRED_KEY);
+let junk = getSet(JUNK_KEY);
 
-document.getElementById("searchInput").addEventListener("keydown", e => {
-    if (e.key === "Enter") doSearch();
-});
-
-function doSearch() {
-    const q = document.getElementById("searchInput").value.trim();
-    if (!q) return;
-    currentQuery = q;
-    switchTab("search");
-    document.getElementById("searchResults").innerHTML = '<li class="loading">Searching...</li>';
-    document.getElementById("searchEmpty").style.display = "none";
-    fetch("/api/search?q=" + encodeURIComponent(q)).then(r => r.json()).then(results => {
-        const el = document.getElementById("searchResults");
-        if (!results.length) { el.innerHTML = '<li class="empty">No results</li>'; return; }
-        el.innerHTML = results.map(r => `
-            <li class="result" onclick="openDoc(${r.doc_id}, ${r.page_num})">
-                <span class="filename">${r.filename}</span>
-                <span class="page">Page ${r.page_num}</span>
-                <a class="btn-pdf-sm" href="/api/pdf/${r.doc_id}" target="_blank" onclick="event.stopPropagation()">PDF</a>
-                <div class="snippet">${r.snippet}</div>
-            </li>
-        `).join("");
+// Load IDs
+fetch("ids.json")
+    .then(r => r.json())
+    .then(nums => {
+        IDS = nums;
+        loaded = true;
+        updateStats();
     });
+
+function makeId(num) {
+    return "EFTA" + String(num).padStart(8, "0");
 }
 
-function switchTab(tab) {
-    document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.tab === tab));
-    ["highlights","search","browse","people","timeline","network"].forEach(t => {
-        document.getElementById(t + "Tab").style.display = t === tab ? "" : "none";
-    });
-    if (tab === "browse") loadDocs();
+function makeUrl(id) {
+    return `https://www.justice.gov/epstein/files/DataSet%209/${id}.pdf`;
 }
 
-function scoreColor(s) {
-    if (s >= 80) return "#da3633";
-    if (s >= 60) return "#f0883e";
-    if (s >= 40) return "#3fb950";
-    return "#484f58";
+function updateStats() {
+    document.getElementById("totalCount").textContent = IDS.length.toLocaleString();
+    document.getElementById("viewedCount").textContent = viewed.size.toLocaleString();
+    document.getElementById("starredCount").textContent = starred.size.toLocaleString();
+    document.getElementById("junkCount").textContent = junk.size.toLocaleString();
+    document.getElementById("starredListCount").textContent = starred.size;
+    document.getElementById("recentListCount").textContent = Math.min(viewed.size, 20);
+    document.getElementById("junkListCount").textContent = junk.size;
+    renderLists();
 }
 
-function renderHighlights(filter) {
-    activeFilter = filter;
-    document.querySelectorAll("#filterBar .filter-btn").forEach(b =>
-        b.classList.toggle("active", b.dataset.type === filter));
-    const filtered = filter === "all" ? highlightsData : highlightsData.filter(h => h.doc_type === filter);
-    const el = document.getElementById("highlightsList");
-    if (!filtered.length) { el.innerHTML = '<li class="empty">No documents match this filter</li>'; return; }
-    el.innerHTML = filtered.map(h => `
-        <li class="result" onclick="openDoc(${h.id})">
-            <span class="filename">${h.filename}</span>
-            <span class="badge badge-${h.doc_type}">${TYPE_LABELS[h.doc_type] || h.doc_type}</span>
-            ${h.news_score ? `<span class="news-score" style="color:${scoreColor(h.news_score)};font-weight:700;margin-left:8px;font-size:13px" title="${escapeHtml(h.news_reason || '')}">${h.news_score}/100</span>` : ''}
-            <a class="btn-pdf-sm" href="/api/pdf/${h.id}" target="_blank" onclick="event.stopPropagation()">PDF</a>
-            <span class="page" style="margin-left:8px">${h.page_count} pages</span>
-            <div class="preview">${formatPreview(h.preview || "")}</div>
-        </li>
-    `).join("");
+function renderLists() {
+    // Starred
+    const starredEl = document.getElementById("starredList");
+    const starredArr = [...starred];
+    starredEl.innerHTML = starredArr.length ? starredArr.map(id => `
+        <div class="file-item starred" onclick="loadFile('${id}', true)">
+            <span>${id}</span>
+            <span class="remove" onclick="event.stopPropagation();unstar('${id}')">&times;</span>
+        </div>
+    `).join('') : '<div style="color:#8b949e;font-size:11px;padding:8px">No starred files yet</div>';
+
+    // Recent (last 20)
+    const recentEl = document.getElementById("recentList");
+    const recentArr = [...viewed].slice(-20).reverse();
+    recentEl.innerHTML = recentArr.length ? recentArr.map(id => `
+        <div class="file-item" onclick="loadFile('${id}', true)">
+            <span>${id}</span>
+            ${starred.has(id) ? '⭐' : ''}
+        </div>
+    `).join('') : '<div style="color:#8b949e;font-size:11px;padding:8px">No files viewed yet</div>';
+
+    // Junk (last 10)
+    const junkEl = document.getElementById("junkList");
+    const junkArr = [...junk].slice(-10).reverse();
+    junkEl.innerHTML = junkArr.length ? junkArr.map(id => `
+        <div class="file-item" onclick="loadFile('${id}', true)">
+            <span>${id}</span>
+            <span class="remove" onclick="event.stopPropagation();unjunk('${id}')">&times;</span>
+        </div>
+    `).join('') : '<div style="color:#8b949e;font-size:11px;padding:8px">No junk marked</div>';
 }
 
-function loadHighlights() {
-    document.getElementById("highlightsList").innerHTML = '<li class="loading">Loading highlights...</li>';
-    fetch("/api/highlights").then(r => r.json()).then(data => {
-        highlightsData = data;
-        // build filter buttons
-        const types = {};
-        data.forEach(h => { types[h.doc_type] = (types[h.doc_type] || 0) + 1; });
-        const bar = document.getElementById("filterBar");
-        bar.innerHTML = `<button class="filter-btn active" data-type="all" onclick="renderHighlights('all')">All (${data.length})</button>`;
-        Object.entries(types).sort((a,b) => b[1]-a[1]).forEach(([t, c]) => {
-            bar.innerHTML += `<button class="filter-btn" data-type="${t}" onclick="renderHighlights('${t}')">${TYPE_LABELS[t]||t} (${c})</button>`;
+function loadFile(id, openTab = true) {
+    currentId = id;
+    const url = makeUrl(id);
+    document.getElementById("currentFile").style.display = "block";
+    document.getElementById("currentFilename").textContent = id + ".pdf";
+    document.getElementById("newTabLink").href = url;
+    document.getElementById("pdfFrame").innerHTML = `<div class="pdf-placeholder">PDF opened in new tab<br><br><a href="${url}" target="_blank" style="color:#58a6ff">Click here if it didn't open</a></div>`;
+
+    if (openTab) {
+        window.open(url, "_blank");
+    }
+
+    viewed.add(id);
+    saveSet(VIEWED_KEY, viewed);
+    updateStats();
+}
+
+function openRandom(anyRandom = false) {
+    if (!loaded) {
+        alert("Still loading file list...");
+        return;
+    }
+
+    let candidates = IDS;
+    if (!anyRandom) {
+        // Filter to unreviewed (not viewed and not junk)
+        candidates = IDS.filter(n => {
+            const id = makeId(n);
+            return !viewed.has(id) && !junk.has(id);
         });
-        renderHighlights("all");
-    });
+    }
+
+    if (!candidates.length) {
+        alert("All files have been reviewed!");
+        return;
+    }
+
+    const num = candidates[Math.floor(Math.random() * candidates.length)];
+    const id = makeId(num);
+    loadFile(id);
 }
 
-function loadDocs() {
-    const el = document.getElementById("docList");
-    if (el.children.length) return;
-    fetch("/api/documents").then(r => r.json()).then(docs => {
-        // build filter bar for browse
-        const types = {};
-        docs.forEach(d => { if (d.doc_type) types[d.doc_type] = (types[d.doc_type] || 0) + 1; });
-        const bar = document.getElementById("browseFilterBar");
-        bar.innerHTML = `<button class="filter-btn active" data-type="all" onclick="filterBrowse('all')">All (${docs.length})</button>`;
-        Object.entries(types).sort((a,b) => b[1]-a[1]).forEach(([t, c]) => {
-            bar.innerHTML += `<button class="filter-btn" data-type="${t}" onclick="filterBrowse('${t}')">${TYPE_LABELS[t]||t} (${c})</button>`;
-        });
-        window._allDocs = docs;
-        renderBrowse(docs);
-    });
-}
-function filterBrowse(type) {
-    document.querySelectorAll("#browseFilterBar .filter-btn").forEach(b =>
-        b.classList.toggle("active", b.dataset.type === type));
-    const docs = type === "all" ? window._allDocs : window._allDocs.filter(d => d.doc_type === type);
-    renderBrowse(docs);
-}
-function renderBrowse(docs) {
-    document.getElementById("docList").innerHTML = docs.map(d => `
-        <li class="doc-item" onclick="openDoc(${d.id})">
-            <span class="name">${d.filename}${d.doc_type ? `<span class="badge badge-${d.doc_type}">${TYPE_LABELS[d.doc_type]||d.doc_type}</span>` : ""}</span>
-            <span class="meta">
-                ${d.page_count} pages
-                <a class="btn-pdf-sm" href="/api/pdf/${d.id}" target="_blank" onclick="event.stopPropagation()">PDF</a>
-            </span>
-        </li>
-    `).join("");
+function markStarred() {
+    if (!currentId) return;
+    starred.add(currentId);
+    junk.delete(currentId);
+    saveSet(STARRED_KEY, starred);
+    saveSet(JUNK_KEY, junk);
+    updateStats();
 }
 
-function openDoc(docId, scrollToPage) {
-    document.getElementById("mainView").style.display = "none";
-    document.getElementById("viewer").classList.add("active");
-    document.getElementById("summaryBox").classList.remove("visible");
-    document.getElementById("viewerPages").innerHTML = '<div class="loading">Loading...</div>';
-
-    fetch("/api/document/" + docId).then(r => r.json()).then(data => {
-        currentDoc = data;
-        document.getElementById("viewerTitle").textContent = data.doc.filename;
-        document.getElementById("btnPdf").href = "/api/pdf/" + docId;
-        const pagesEl = document.getElementById("viewerPages");
-        pagesEl.innerHTML = data.pages.map(p => `
-            <div class="page-block" id="page-${p.page_num}">
-                <div class="page-num">Page ${p.page_num}</div>
-                <pre>${escapeHtml(p.text) || "(no text extracted)"}</pre>
-            </div>
-        `).join("");
-        if (scrollToPage) {
-            const target = document.getElementById("page-" + scrollToPage);
-            if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
-    });
+function markJunk() {
+    if (!currentId) return;
+    junk.add(currentId);
+    starred.delete(currentId);
+    saveSet(JUNK_KEY, junk);
+    saveSet(STARRED_KEY, starred);
+    updateStats();
+    // Auto-load next
+    openRandom();
 }
 
-function closeViewer() {
-    document.getElementById("mainView").style.display = "";
-    document.getElementById("viewer").classList.remove("active");
-    currentDoc = null;
+function unstar(id) {
+    starred.delete(id);
+    saveSet(STARRED_KEY, starred);
+    updateStats();
 }
 
-function aiSummarize() {
-    if (!currentDoc) return;
-    const btn = document.getElementById("btnAi");
-    btn.disabled = true;
-    btn.textContent = "Generating...";
-    const box = document.getElementById("summaryBox");
-    box.classList.add("visible");
-    document.getElementById("summaryText").textContent = "Analyzing document...";
-
-    const text = (currentDoc.doc.condensed || currentDoc.pages.map(p => p.text).join("\n")).slice(0, 8000);
-    fetch("/api/summarize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, query: currentQuery || currentDoc.doc.filename })
-    }).then(r => r.json()).then(data => {
-        document.getElementById("summaryText").textContent = data.summary || data.error;
-        btn.disabled = false;
-        btn.textContent = "AI Summary";
-    }).catch(e => {
-        document.getElementById("summaryText").textContent = "Error: " + e.message;
-        btn.disabled = false;
-        btn.textContent = "AI Summary";
-    });
+function unjunk(id) {
+    junk.delete(id);
+    saveSet(JUNK_KEY, junk);
+    updateStats();
 }
 
-function escapeHtml(s) {
-    return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+function exportData() {
+    const data = {
+        starred: [...starred],
+        viewed: viewed.size,
+        junk: junk.size,
+        exported: new Date().toISOString()
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'epstein-starred-files.json';
+    a.click();
 }
 
-function formatPreview(s) {
-    let h = escapeHtml(s);
-    h = h.replace(/\*\*(.+?)\*\*/g, '<strong style="color:#f0f6fc">$1</strong>');
-    h = h.replace(/\*\s+/g, '&bull; ');
-    h = h.replace(/\n/g, '<br>');
-    return h;
-}
+// Initialize
+updateStats();
 </script>
 </body>
 </html>
