@@ -164,7 +164,7 @@ function renderLists() {
     const starredEl = document.getElementById("starredList");
     const starredArr = [...starred];
     starredEl.innerHTML = starredArr.length ? starredArr.map(id => `
-        <div class="file-item starred" onclick="loadFile('${id}')">
+        <div class="file-item starred" onclick="loadFile('${id}', true)">
             <span>${id}</span>
             <span class="remove" onclick="event.stopPropagation();unstar('${id}')">&times;</span>
         </div>
@@ -174,7 +174,7 @@ function renderLists() {
     const recentEl = document.getElementById("recentList");
     const recentArr = [...viewed].slice(-20).reverse();
     recentEl.innerHTML = recentArr.length ? recentArr.map(id => `
-        <div class="file-item" onclick="loadFile('${id}')">
+        <div class="file-item" onclick="loadFile('${id}', true)">
             <span>${id}</span>
             ${starred.has(id) ? '⭐' : ''}
         </div>
@@ -184,20 +184,24 @@ function renderLists() {
     const junkEl = document.getElementById("junkList");
     const junkArr = [...junk].slice(-10).reverse();
     junkEl.innerHTML = junkArr.length ? junkArr.map(id => `
-        <div class="file-item" onclick="loadFile('${id}')">
+        <div class="file-item" onclick="loadFile('${id}', true)">
             <span>${id}</span>
             <span class="remove" onclick="event.stopPropagation();unjunk('${id}')">&times;</span>
         </div>
     `).join('') : '<div style="color:#8b949e;font-size:11px;padding:8px">No junk marked</div>';
 }
 
-function loadFile(id) {
+function loadFile(id, openTab = true) {
     currentId = id;
     const url = makeUrl(id);
     document.getElementById("currentFile").style.display = "block";
     document.getElementById("currentFilename").textContent = id + ".pdf";
     document.getElementById("newTabLink").href = url;
-    document.getElementById("pdfFrame").innerHTML = `<iframe src="${url}"></iframe>`;
+    document.getElementById("pdfFrame").innerHTML = `<div class="pdf-placeholder">PDF opened in new tab<br><br><a href="${url}" target="_blank" style="color:#58a6ff">Click here if it didn't open</a></div>`;
+
+    if (openTab) {
+        window.open(url, "_blank");
+    }
 
     viewed.add(id);
     saveSet(VIEWED_KEY, viewed);
