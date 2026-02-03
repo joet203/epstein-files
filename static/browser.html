@@ -87,17 +87,29 @@ h1 { font-size: 24px; color: #f0f6fc; margin-bottom: 8px; }
 </div>
 
 <script>
-fetch("/api/ds9/stats").then(r => r.json()).then(data => {
-    document.getElementById("count").textContent = data.count.toLocaleString();
-});
+// Dataset 9 ID range: EFTA00039025 to EFTA01262781 (1,223,757 files)
+const ID_MIN = 39025;
+const ID_MAX = 1262781;
+const TOTAL_COUNT = ID_MAX - ID_MIN + 1;
+
+document.getElementById("count").textContent = TOTAL_COUNT.toLocaleString();
+
+function makeId(num) {
+    return "EFTA" + String(num).padStart(8, "0");
+}
+
+function makeUrl(id) {
+    return `https://www.justice.gov/epstein/files/DataSet%209/${id}.pdf`;
+}
 
 function openRandom() {
-    fetch("/api/ds9/random").then(r => r.json()).then(data => {
-        document.getElementById("currentFile").style.display = "block";
-        document.getElementById("currentFilename").textContent = data.id + ".pdf";
-        document.getElementById("currentLink").href = data.url;
-        window.open(data.url, "_blank");
-    });
+    const num = Math.floor(Math.random() * TOTAL_COUNT) + ID_MIN;
+    const id = makeId(num);
+    const url = makeUrl(id);
+    document.getElementById("currentFile").style.display = "block";
+    document.getElementById("currentFilename").textContent = id + ".pdf";
+    document.getElementById("currentLink").href = url;
+    window.open(url, "_blank");
 }
 
 document.getElementById("searchInput").addEventListener("keydown", e => {
@@ -105,22 +117,48 @@ document.getElementById("searchInput").addEventListener("keydown", e => {
 });
 
 function doSearch() {
-    const q = document.getElementById("searchInput").value.trim();
+    const q = document.getElementById("searchInput").value.trim().toUpperCase();
     if (!q) return;
-    document.getElementById("results").innerHTML = '<div style="color:#8b949e;padding:20px;text-align:center">Searching...</div>';
-    fetch("/api/ds9/search?q=" + encodeURIComponent(q)).then(r => r.json()).then(results => {
-        const el = document.getElementById("results");
-        if (!results.length) {
-            el.innerHTML = '<div style="color:#8b949e;padding:20px;text-align:center">No matches found</div>';
+    const el = document.getElementById("results");
+
+    // Check if it's a valid ID format
+    const match = q.match(/EFTA(\d+)/);
+    if (match) {
+        const num = parseInt(match[1], 10);
+        if (num >= ID_MIN && num <= ID_MAX) {
+            const id = makeId(num);
+            el.innerHTML = `
+                <div class="result">
+                    <span class="id">${id}.pdf</span>
+                    <a class="open-btn" href="${makeUrl(id)}" target="_blank">Open PDF</a>
+                </div>
+            `;
             return;
         }
-        el.innerHTML = results.map(r => `
-            <div class="result">
-                <span class="id">${r.id}.pdf</span>
-                <a class="open-btn" href="${r.url}" target="_blank">Open PDF</a>
-            </div>
-        `).join("");
-    });
+    }
+
+    // Show nearby IDs if partial match
+    if (/^\d+$/.test(q) && q.length >= 4) {
+        const base = parseInt(q, 10);
+        const results = [];
+        for (let i = 0; i < 10; i++) {
+            const num = base * Math.pow(10, 8 - q.length) + i;
+            if (num >= ID_MIN && num <= ID_MAX) {
+                results.push(makeId(num));
+            }
+        }
+        if (results.length) {
+            el.innerHTML = results.map(id => `
+                <div class="result">
+                    <span class="id">${id}.pdf</span>
+                    <a class="open-btn" href="${makeUrl(id)}" target="_blank">Open PDF</a>
+                </div>
+            `).join("");
+            return;
+        }
+    }
+
+    el.innerHTML = '<div style="color:#8b949e;padding:20px;text-align:center">Enter a valid ID like EFTA00039025 or a number between 39025-1262781</div>';
 }
 </script>
 </body>
