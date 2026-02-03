@@ -87,12 +87,22 @@ h1 { font-size: 24px; color: #f0f6fc; margin-bottom: 8px; }
 </div>
 
 <script>
-// Dataset 9 ID range: EFTA00039025 to EFTA01262781 (1,223,757 files)
-const ID_MIN = 39025;
-const ID_MAX = 1262781;
-const TOTAL_COUNT = ID_MAX - ID_MIN + 1;
+let IDS = [];
+let loaded = false;
 
-document.getElementById("count").textContent = TOTAL_COUNT.toLocaleString();
+document.getElementById("count").textContent = "Loading...";
+
+// Load the valid IDs (numbers only, prefixed with EFTA)
+fetch("/ids.json")
+    .then(r => r.json())
+    .then(nums => {
+        IDS = nums;
+        loaded = true;
+        document.getElementById("count").textContent = IDS.length.toLocaleString();
+    })
+    .catch(() => {
+        document.getElementById("count").textContent = "Error loading";
+    });
 
 function makeId(num) {
     return "EFTA" + String(num).padStart(8, "0");
@@ -103,7 +113,11 @@ function makeUrl(id) {
 }
 
 function openRandom() {
-    const num = Math.floor(Math.random() * TOTAL_COUNT) + ID_MIN;
+    if (!loaded) {
+        alert("Still loading file list, please wait...");
+        return;
+    }
+    const num = IDS[Math.floor(Math.random() * IDS.length)];
     const id = makeId(num);
     const url = makeUrl(id);
     document.getElementById("currentFile").style.display = "block";
@@ -117,48 +131,33 @@ document.getElementById("searchInput").addEventListener("keydown", e => {
 });
 
 function doSearch() {
+    if (!loaded) {
+        alert("Still loading file list, please wait...");
+        return;
+    }
     const q = document.getElementById("searchInput").value.trim().toUpperCase();
     if (!q) return;
     const el = document.getElementById("results");
 
-    // Check if it's a valid ID format
-    const match = q.match(/EFTA(\d+)/);
+    // Extract number from query
+    const match = q.match(/(\d+)/);
     if (match) {
-        const num = parseInt(match[1], 10);
-        if (num >= ID_MIN && num <= ID_MAX) {
-            const id = makeId(num);
-            el.innerHTML = `
-                <div class="result">
+        const searchNum = parseInt(match[1], 10);
+        // Find matching IDs
+        const matches = IDS.filter(n => String(n).includes(match[1])).slice(0, 20);
+        if (matches.length) {
+            el.innerHTML = matches.map(n => {
+                const id = makeId(n);
+                return `<div class="result">
                     <span class="id">${id}.pdf</span>
                     <a class="open-btn" href="${makeUrl(id)}" target="_blank">Open PDF</a>
-                </div>
-            `;
+                </div>`;
+            }).join("");
             return;
         }
     }
 
-    // Show nearby IDs if partial match
-    if (/^\d+$/.test(q) && q.length >= 4) {
-        const base = parseInt(q, 10);
-        const results = [];
-        for (let i = 0; i < 10; i++) {
-            const num = base * Math.pow(10, 8 - q.length) + i;
-            if (num >= ID_MIN && num <= ID_MAX) {
-                results.push(makeId(num));
-            }
-        }
-        if (results.length) {
-            el.innerHTML = results.map(id => `
-                <div class="result">
-                    <span class="id">${id}.pdf</span>
-                    <a class="open-btn" href="${makeUrl(id)}" target="_blank">Open PDF</a>
-                </div>
-            `).join("");
-            return;
-        }
-    }
-
-    el.innerHTML = '<div style="color:#8b949e;padding:20px;text-align:center">Enter a valid ID like EFTA00039025 or a number between 39025-1262781</div>';
+    el.innerHTML = '<div style="color:#8b949e;padding:20px;text-align:center">No matching files found</div>';
 }
 </script>
 </body>
