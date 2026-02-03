@@ -16,3 +16,5 @@ venv/
 
 # Cache
 *.log
+.vercel
+.env*.local
