@@ -132,7 +132,7 @@ let starred = getSet(STARRED_KEY);
 let junk = getSet(JUNK_KEY);
 
 // Load IDs
-fetch("/static/ids.json")
+fetch("/ids.json")
     .then(r => r.json())
     .then(nums => {
         IDS = nums;

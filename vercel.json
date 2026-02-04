@@ -1,6 +1,7 @@
 {
   "rewrites": [
     { "source": "/", "destination": "/static/browser.html" },
-    { "source": "/browser", "destination": "/static/browser.html" }
+    { "source": "/browser", "destination": "/static/browser.html" },
+    { "source": "/ids.json", "destination": "/static/ids.json" }
   ]
 }
